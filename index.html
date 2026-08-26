@@ -56,6 +56,7 @@
     html { background: var(--bg); }
     body {
       margin: 0;
+      min-height: 100dvh;
       overflow: hidden;
       color: var(--text);
       background:
@@ -104,7 +105,7 @@
       color: var(--text);
       background: var(--surface);
       cursor: pointer;
-      line-height: 1;
+      font: 1.1rem/1 "Red Hat Mono", monospace;
       transition: transform .25s ease, color .35s ease, background-color .35s ease, border-color .35s ease;
     }
     .theme-toggle:hover { transform: rotate(18deg) scale(1.06); }
@@ -114,8 +115,8 @@
       display: grid;
       place-items: center;
       width: 100%;
-      min-height: 100svh;
-      padding: 6rem 1rem 3rem;
+      min-height: 100dvh;
+      padding: 0;
     }
     .visual {
       position: relative;
@@ -123,6 +124,7 @@
       place-items: center;
       width: min(72vw, 32rem);
       aspect-ratio: 1;
+      margin: 0;
       isolation: isolate;
     }
     #orb {
@@ -157,9 +159,14 @@
       50% { opacity: .3; transform: scale(.7); }
     }
     @media (max-width: 560px) {
-      .visual { width: min(92vw, 29rem); }
-      .brand { top: 1.4rem; }
-      .theme-toggle { top: 1.2rem; right: 1.1rem; }
+      .visual { width: min(94vw, 29rem); }
+      .brand { top: max(1.4rem, env(safe-area-inset-top)); }
+      .theme-toggle {
+        top: max(1.2rem, env(safe-area-inset-top));
+        right: max(1.1rem, env(safe-area-inset-right));
+        width: 2.75rem;
+        font-size: 1.25rem;
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -484,7 +491,7 @@
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
       context.clearRect(0, 0, width, height);
-      const frameSize = Math.min(width, height) * .72;
+      const frameSize = Math.min(width, height) * (width <= 560 ? .82 : .72);
       const offsetX = (width - frameSize) / 2;
       const offsetY = (height - frameSize) / 2 - height * .02;
       const staticTime = .6;
