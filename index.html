@@ -1,48 +1,531 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QRG MX</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090b">
+  <meta name="description" content="QRG.MX — señal en movimiento.">
+  <title>QRG.MX</title>
+  <script>
+    try {
+      const saved = localStorage.getItem('qrg-theme');
+      document.documentElement.dataset.theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    } catch { document.documentElement.dataset.theme = 'dark'; }
+  </script>
   <style>
+    @font-face {
+      font-family: "Red Hat Display";
+      src: url("./assets/fonts/RedHatDisplay-VariableFont_wght.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 300 900;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Red Hat Mono";
+      src: url("./assets/fonts/RedHatMono-VariableFont_wght.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 300 700;
+      font-display: swap;
+    }
+    :root {
+      color-scheme: dark;
+      --bg: #08090b;
+      --text: #f4f5f7;
+      --muted: #7d818a;
+      --line: rgb(255 255 255 / .12);
+      --surface: rgb(255 255 255 / .055);
+      --lime: #c8ff42;
+      --lime-rgb: 200 255 66;
+      --cyan-rgb: 67 221 255;
+      --shadow: 0 0 0;
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f3f4ef;
+      --text: #14171b;
+      --muted: #747982;
+      --line: rgb(20 28 35 / .13);
+      --surface: rgb(255 255 255 / .62);
+      --lime: #9bc719;
+      --lime-rgb: 155 199 25;
+      --cyan-rgb: 8 127 153;
+      --shadow: 38 45 50;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; }
+    html { background: var(--bg); }
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
       margin: 0;
-      text-align: center;
+      overflow: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 48%, rgb(var(--cyan-rgb) / .055), transparent min(42rem, 70vw)),
+        var(--bg);
+      font-family: "Red Hat Display", system-ui, sans-serif;
+      transition: color .5s ease, background-color .5s ease;
     }
-    .card {
-      background: #1e293b;
-      padding: 2.5rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      max-width: 480px;
-      border: 1px solid #334155;
+    .brand {
+      position: fixed;
+      top: clamp(1.5rem, 5vh, 3.5rem);
+      left: 50%;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: .75rem;
+      color: inherit;
+      text-decoration: none;
+      font-size: .86rem;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      transform: translateX(-50%);
     }
-    h1 { color: #38bdf8; margin-top: 0; }
-    p { color: #94a3b8; line-height: 1.6; }
-    .badge {
-      display: inline-block;
-      background: #0284c7;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      color: #10130b;
+      background: var(--lime);
+      box-shadow: 0 0 28px rgb(var(--lime-rgb) / .34);
+    }
+    .theme-toggle {
+      position: fixed;
+      top: clamp(1.5rem, 5vh, 3.5rem);
+      right: clamp(1.25rem, 4vw, 3.5rem);
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      width: 2.25rem;
+      aspect-ratio: 1;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--text);
+      background: var(--surface);
+      cursor: pointer;
+      line-height: 1;
+      transition: transform .25s ease, color .35s ease, background-color .35s ease, border-color .35s ease;
+    }
+    .theme-toggle:hover { transform: rotate(18deg) scale(1.06); }
+    .theme-toggle:focus-visible { outline: 2px solid rgb(var(--cyan-rgb)); outline-offset: 3px; }
+    .theme-icon { transform: translateY(-.02em); }
+    main {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-height: 100svh;
+      padding: 6rem 1rem 3rem;
+    }
+    .visual {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: min(72vw, 32rem);
+      aspect-ratio: 1;
+      isolation: isolate;
+    }
+    #orb {
+      display: block;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 22px rgb(var(--cyan-rgb) / .12));
+    }
+    .signal {
+      position: absolute;
+      bottom: 4%;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      color: var(--muted);
+      font: 500 .64rem "Red Hat Mono", monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transform: translateX(-50%);
+    }
+    .signal-dot {
+      width: .4rem;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 12px var(--lime);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      50% { opacity: .3; transform: scale(.7); }
+    }
+    @media (max-width: 560px) {
+      .visual { width: min(92vw, 29rem); }
+      .brand { top: 1.4rem; }
+      .theme-toggle { top: 1.2rem; right: 1.1rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <span class="badge">En línea</span>
-    <h1>QRG MX</h1>
-    <p>Página estática desplegada exitosamente con GitHub Pages.</p>
-  </div>
+  <a class="brand" href="./index.html" aria-label="Volver a QRG MX">
+    <span class="brand-mark">Q</span>
+    QRG.MX
+  </a>
+
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar a tema claro" aria-pressed="false">
+    <span class="theme-icon" id="theme-icon" aria-hidden="true">☼</span>
+  </button>
+
+  <main>
+    <figure class="visual" aria-label="Señal QRG en movimiento">
+      <canvas id="orb"></canvas>
+      <figcaption class="signal"><span class="signal-dot"></span><span id="orb-status">working</span></figcaption>
+    </figure>
+  </main>
+
+  <script>
+    const root = document.documentElement;
+    const themeToggle = document.querySelector('#theme-toggle');
+    const themeIcon = document.querySelector('#theme-icon');
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    const canvas = document.querySelector('#orb');
+    const context = canvas.getContext('2d');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let palette;
+    let size = 0;
+    const modes = ['working', 'connecting', 'composing', 'breathing'];
+    const orbStatus = document.querySelector('#orb-status');
+    let currentMode = modes[Math.floor(Math.random() * modes.length)];
+
+    /*
+      Animation geometry adapted from thinking-orbs:
+      https://github.com/Jakubantalik/Libraries/tree/main/packages/thinking-orbs
+
+      MIT License
+      Copyright (c) 2026 Jakub Antalik
+
+      Permission is hereby granted, free of charge, to any person obtaining a copy
+      of this software and associated documentation files (the "Software"), to deal
+      in the Software without restriction, including without limitation the rights
+      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+      copies of the Software, and to permit persons to whom the Software is
+      furnished to do so, subject to the following conditions:
+
+      The above copyright notice and this permission notice shall be included in all
+      copies or substantial portions of the Software.
+
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+      SOFTWARE.
+    */
+
+    function applyTheme(theme, persist = true) {
+      const light = theme === 'light';
+      root.dataset.theme = light ? 'light' : 'dark';
+      themeIcon.textContent = light ? '☾' : '☼';
+      themeToggle.setAttribute('aria-pressed', String(light));
+      themeToggle.setAttribute('aria-label', light ? 'Cambiar a tema oscuro' : 'Cambiar a tema claro');
+      themeMeta.content = light ? '#f3f4ef' : '#08090b';
+      palette = light
+        ? { front: [18, 45, 53], back: [8, 127, 153], accent: [128, 169, 20] }
+        : { front: [239, 250, 255], back: [67, 221, 255], accent: [200, 255, 66] };
+      if (persist) {
+        try { localStorage.setItem('qrg-theme', root.dataset.theme); } catch {}
+      }
+      if (reducedMotion && size) render(0);
+    }
+
+    const lerp = (a, b, amount) => a + (b - a) * amount;
+    const frac = value => value - Math.floor(value);
+
+    function hashD(a, b) {
+      const hash = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+      return hash - Math.floor(hash);
+    }
+
+    function vnoise(x, y) {
+      const xi = Math.floor(x);
+      const yi = Math.floor(y);
+      let fx = x - xi;
+      let fy = y - yi;
+      fx = fx * fx * (3 - 2 * fx);
+      fy = fy * fy * (3 - 2 * fy);
+      const a = hashD(xi, yi);
+      const b = hashD(xi + 1, yi);
+      const c = hashD(xi, yi + 1);
+      const d = hashD(xi + 1, yi + 1);
+      return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+    }
+
+    function fibDir(index, count) {
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      const y = 1 - (2 * (index + .5)) / count;
+      const radius = Math.sqrt(1 - y * y);
+      const angle = index * golden;
+      return [radius * Math.cos(angle), y, radius * Math.sin(angle)];
+    }
+
+    function makeProj(yaw, tilt, centerX, centerY, scale) {
+      const sinTilt = Math.sin(tilt);
+      const cosTilt = Math.cos(tilt);
+      const sinYaw = Math.sin(yaw);
+      const cosYaw = Math.cos(yaw);
+      return (x, y, z) => {
+        const x1 = x * cosYaw + z * sinYaw;
+        const z1 = -x * sinYaw + z * cosYaw;
+        const y1 = y * cosTilt - z1 * sinTilt;
+        const z2 = y * sinTilt + z1 * cosTilt;
+        return [centerX + x1 * scale, centerY - y1 * scale, z2];
+      };
+    }
+
+    const radiusScale = (frameSize, power = .6) => (frameSize / 300) ** power;
+
+    function finalizeFrame(dots, lines = [], minRadius = .3) {
+      const visible = dots.filter(dot => (dot.a ?? 1) >= .02);
+      for (const dot of visible) dot.r = Math.max(minRadius, dot.r);
+      visible.sort((a, b) => a.z - b.z);
+      return {dots: visible, lines: lines.filter(line => (line.a ?? 1) >= .02)};
+    }
+
+    function frameOrbits(frameSize, time) {
+      const center = frameSize / 2;
+      const radius = center * .82;
+      const project = makeProj(time * .12, .3, center, center, 1);
+      const scale = radiusScale(frameSize);
+      const dots = [];
+      for (let orbit = 0; orbit < 12; orbit++) {
+        const h1 = hashD(orbit, 1.7);
+        const h2 = hashD(orbit, 5.2);
+        const h3 = hashD(orbit, 8.9);
+        const orbitRadius = radius * (.45 + .52 * h1);
+        const theta = h1 * 2 * Math.PI;
+        const phi = Math.acos(2 * h2 - 1);
+        const nx = Math.sin(phi) * Math.cos(theta);
+        const ny = Math.cos(phi);
+        const nz = Math.sin(phi) * Math.sin(theta);
+        let ux = -ny;
+        let uy = nx;
+        const uz = 0;
+        const unitLength = Math.max(1e-6, Math.hypot(ux, uy));
+        ux /= unitLength;
+        uy /= unitLength;
+        const vx = ny * uz - nz * uy;
+        const vy = nz * ux - nx * uz;
+        const vz = nx * uy - ny * ux;
+        const speed = (.25 + .55 * h3) * (h3 > .5 ? 1 : -1);
+
+        for (let index = 0; index < 40; index++) {
+          const angle = (index / 40) * 2 * Math.PI;
+          const [x, y, z] = project(
+            (ux * Math.cos(angle) + vx * Math.sin(angle)) * orbitRadius,
+            (uy * Math.cos(angle) + vy * Math.sin(angle)) * orbitRadius,
+            (uz * Math.cos(angle) + vz * Math.sin(angle)) * orbitRadius
+          );
+          const depth = (z / orbitRadius + 1) / 2;
+          dots.push({x, y, z, r: .9 * scale, white: .72, a: .5 * (.4 + .6 * depth)});
+        }
+
+        for (let particle = 0; particle < 3; particle++) {
+          const angle = time * speed + (particle / 3) * 2 * Math.PI + h2 * 6;
+          const [x, y, z] = project(
+            (ux * Math.cos(angle) + vx * Math.sin(angle)) * orbitRadius,
+            (uy * Math.cos(angle) + vy * Math.sin(angle)) * orbitRadius,
+            (uz * Math.cos(angle) + vz * Math.sin(angle)) * orbitRadius
+          );
+          const depth = (z / orbitRadius + 1) / 2;
+          dots.push({x, y, z, r: (1.2 + 1.6 * depth) * scale, white: .3 - .22 * depth});
+        }
+      }
+      return finalizeFrame(dots);
+    }
+
+    function frameWeb(frameSize, time) {
+      const center = frameSize / 2;
+      const radius = center * .8;
+      const project = makeProj(time * .12, .32, center, center, radius);
+      const scale = radiusScale(frameSize);
+      const nodeCount = 41;
+      const threshold = .72;
+      const nodeRadius = 1.33;
+      const nodeDepthRadius = 1.71;
+      const nodes = [];
+
+      for (let index = 0; index < nodeCount; index++) {
+        const direction = fibDir(index, nodeCount);
+        const x = direction[0] + .3 * (vnoise(index * .31 + 9, time * .24) - .5) * 2;
+        const y = direction[1] + .3 * (vnoise(index * .53 + 27, time * .21) - .5) * 2;
+        const z = direction[2] + .3 * (vnoise(index * .77 + 55, time * .27) - .5) * 2;
+        const length = Math.hypot(x, y, z);
+        nodes.push([x / length, y / length, z / length]);
+      }
+
+      const lines = [];
+      const dots = [];
+      for (let index = 0; index < nodeCount; index++) {
+        for (let other = index + 1; other < nodeCount; other++) {
+          const distance = Math.hypot(
+            nodes[index][0] - nodes[other][0],
+            nodes[index][1] - nodes[other][1],
+            nodes[index][2] - nodes[other][2]
+          );
+          if (distance >= threshold) continue;
+          const [x1, y1, z1] = project(...nodes[index]);
+          const [x2, y2, z2] = project(...nodes[other]);
+          const depth = ((z1 + z2) / 2 + 1) / 2;
+          lines.push({x1, y1, x2, y2, white: .42, a: (1 - distance / threshold) * (.3 + .55 * depth), w: Math.max(.6, .8 * scale)});
+        }
+      }
+
+      for (let index = 0; index < nodeCount; index++) {
+        const [x, y, z] = project(...nodes[index]);
+        const depth = (z + 1) / 2;
+        const pulse = 1 + .25 * Math.sin(time * 1.4 + index * 2.7);
+        dots.push({x, y, z, r: (nodeRadius + nodeDepthRadius * depth) * pulse * scale, white: .55 - .45 * depth});
+      }
+
+      for (let signal = 0; signal < 7; signal++) {
+        const segment = Math.floor(time * .55 + signal * 7.31);
+        const from = Math.floor(hashD(segment, signal * 3.1 + 1.7) * nodeCount);
+        const to = Math.floor(hashD(segment, signal * 5.7 + 4.2) * nodeCount);
+        if (from === to) continue;
+        const amount = frac(time * .55 + signal * 7.31);
+        const x = lerp(nodes[from][0], nodes[to][0], amount);
+        const y = lerp(nodes[from][1], nodes[to][1], amount);
+        const z = lerp(nodes[from][2], nodes[to][2], amount);
+        const length = Math.max(1e-6, Math.hypot(x, y, z));
+        const [px, py, projectedZ] = project(x / length, y / length, z / length);
+        const depth = (projectedZ + 1) / 2;
+        dots.push({x: px, y: py, z: projectedZ, r: (nodeRadius * 1.5 + nodeDepthRadius * depth) * scale, white: .05, a: .5 + .5 * depth});
+      }
+      return finalizeFrame(dots, lines);
+    }
+
+    function frameRibbon(frameSize, time, breathing = false) {
+      const center = frameSize / 2;
+      const radius = center * .78;
+      const cameraTilt = .3;
+      const project = makeProj(0, cameraTilt, center, center, 1);
+      const scale = radiusScale(frameSize);
+      const dots = [];
+      const baseLanes = 3;
+      const segments = 44;
+      const bandMultiplier = breathing ? 3.627 : 3.9;
+      const wobbleMultiplier = breathing ? .368 : 1;
+      const radiusBase = 1.1 * (breathing ? .956 : .85);
+      const radiusDepth = 1.7 * (breathing ? .956 : .85);
+
+      if (!breathing) {
+        for (let index = 0; index < 38; index++) {
+          const direction = fibDir(index, 38);
+          const [x, y, z] = project(direction[0] * radius, direction[1] * radius, direction[2] * radius);
+          const depth = (z / radius + 1) / 2;
+          dots.push({x, y, z, r: .8 * scale, white: .78, a: .1 + .22 * depth});
+        }
+      }
+
+      const tilt = breathing ? -cameraTilt : .55;
+      const ux = 1;
+      const uy = 0;
+      const uz = 0;
+      const vx = -uz * Math.sin(tilt);
+      const vy = Math.cos(tilt);
+      const vz = ux * Math.sin(tilt);
+      const nx = uy * vz - uz * vy;
+      const ny = uz * vx - ux * vz;
+      const nz = ux * vy - uy * vx;
+      const wobbleAmplitude = .23 * wobbleMultiplier;
+      const baseRadius = breathing ? radius / (1 + .85 * wobbleAmplitude) : radius;
+      const lanes = Math.max(1, Math.round(baseLanes * bandMultiplier));
+
+      for (let lane = 0; lane < lanes; lane++) {
+        const laneOffset = (lane - (lanes - 1) / 2) * .075;
+        const edge = Math.abs(lane - (lanes - 1) / 2) / Math.max(1, (lanes - 1) / 2);
+        for (let index = 0; index < segments; index++) {
+          const angle = (index / segments) * 2 * Math.PI;
+          const wobble = (.16 * Math.sin(angle * 3 - time * 1.7 + lane * .22) + .07 * Math.sin(angle * 5 + time * 1.1)) * wobbleMultiplier;
+          const radial = breathing ? 1 + wobble : 1;
+          const offset = breathing ? laneOffset : laneOffset + wobble;
+          const x = ux * Math.cos(angle) + vx * Math.sin(angle) + nx * offset;
+          const y = uy * Math.cos(angle) + vy * Math.sin(angle) + ny * offset;
+          const z = uz * Math.cos(angle) + vz * Math.sin(angle) + nz * offset;
+          const length = Math.hypot(x, y, z);
+          const currentRadius = baseRadius * radial;
+          const [px, py, projectedZ] = project((x / length) * currentRadius, (y / length) * currentRadius, (z / length) * currentRadius);
+          const depth = (projectedZ / radius + 1) / 2;
+          dots.push({
+            x: px,
+            y: py,
+            z: projectedZ,
+            r: (radiusBase + radiusDepth * depth) * (1 - .25 * edge) * scale,
+            white: .52 - .44 * depth + .18 * edge,
+            a: .4 + .6 * depth
+          });
+        }
+      }
+      return finalizeFrame(dots);
+    }
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      size = Math.min(rect.width, rect.height);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (reducedMotion) render(0);
+    }
+
+    function render(now) {
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      context.clearRect(0, 0, width, height);
+      const frameSize = Math.min(width, height) * .72;
+      const offsetX = (width - frameSize) / 2;
+      const offsetY = (height - frameSize) / 2 - height * .02;
+      const staticTime = .6;
+      const seconds = reducedMotion ? staticTime : now / 1000;
+      const speed = {working: .9425, connecting: 1.6575, composing: 1.17, breathing: 1.62}[currentMode];
+      const time = seconds * speed;
+      const frame = currentMode === 'working'
+        ? frameOrbits(frameSize, time)
+        : currentMode === 'connecting'
+          ? frameWeb(frameSize, time)
+          : frameRibbon(frameSize, time, currentMode === 'breathing');
+
+      context.save();
+      context.translate(offsetX, offsetY);
+      context.lineCap = 'round';
+      for (const line of frame.lines) {
+        context.beginPath();
+        context.moveTo(line.x1, line.y1);
+        context.lineTo(line.x2, line.y2);
+        context.lineWidth = line.w;
+        context.strokeStyle = `rgba(${palette.front.join(',')},${line.a ?? 1})`;
+        context.stroke();
+      }
+      for (const dot of frame.dots) {
+        const color = dot.white < .18 ? palette.accent : (dot.white < .62 ? palette.front : palette.back);
+        context.beginPath();
+        context.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+        context.fillStyle = `rgba(${color.join(',')},${dot.a ?? 1})`;
+        context.fill();
+      }
+      context.restore();
+
+      if (!reducedMotion) requestAnimationFrame(render);
+    }
+
+    applyTheme(root.dataset.theme === 'light' ? 'light' : 'dark', false);
+    orbStatus.textContent = currentMode;
+    themeToggle.addEventListener('click', () => applyTheme(root.dataset.theme === 'light' ? 'dark' : 'light'));
+    addEventListener('resize', resize);
+    resize();
+    if (!reducedMotion) requestAnimationFrame(render);
+  </script>
 </body>
 </html>
